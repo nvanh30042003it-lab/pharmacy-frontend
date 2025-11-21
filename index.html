@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Pharmacy Store</title>
+</head>
+<body>
+<h1>Pharmacy Store</h1>
+
+<div id="products"></div>
+
+<script>
+const API_BASE_URL = "https://pharmacy3004.onrender.com";
+const AI_API = "https://pharmacy3004.onrender.com/ai/chat";
+
+async function loadProducts() {
+    const res = await fetch(`${API_BASE_URL}/products`);
+    const data = await res.json();
+    const box = document.getElementById("products");
+    box.innerHTML = data.map(p => `<div><h3>${p.name}</h3><p>${p.price}</p></div>`).join("");
+}
+loadProducts();
+</script>
+</body>
+</html>

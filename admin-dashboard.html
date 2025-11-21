@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Admin</title>
+</head>
+<body>
+<h1>Admin Dashboard</h1>
+
+<form id="addForm">
+<input id="name" placeholder="Tên sản phẩm" />
+<input id="price" placeholder="Giá" />
+<button type="submit">Thêm</button>
+</form>
+
+<div id="result"></div>
+
+<script>
+const API = "https://pharmacy3004.onrender.com";
+
+document.getElementById("addForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const body = {
+        name: document.getElementById("name").value,
+        price: parseFloat(document.getElementById("price").value)
+    };
+    const res = await fetch(`${API}/products`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+    document.getElementById("result").innerText = "Đã thêm!";
+});
+</script>
+</body>
+</html>
