@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhà thuốc ANHDUONG </title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f7fa;
+            color: #111;
+        }
+
+        /* Neon Cyan Theme */
+        :root {
+            --neon: #00E5FF;
+            --dark: #0f172a;
+            --semi-dark: #1e293b;
+            --soft-dark: #334155;
+        }
+
+        /* Header */
+        .header-neon {
+            background: var(--semi-dark);
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 229, 255, 0.15);
+        }
+
+        /* Buttons */
+        .btn-neon {
+            background: var(--neon);
+            color: #000;
+            font-weight: 600;
+            transition: 0.25s;
+        }
+        .btn-neon:hover {
+            box-shadow: 0 0 12px var(--neon);
+            transform: translateY(-2px);
+        }
+
+        /* Product cards */
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: 0.25s;
+        }
+        .product-card:hover {
+            border: 1px solid var(--neon);
+            transform: translateY(-4px);
+            box-shadow: 0 0 16px rgba(0,229,255,0.35);
+        }
+
+        /* Cart modal */
+        .modal-bg {
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.25);
+        }
+
+        /* Input highlight */
+        input:focus, textarea:focus {
+            border-color: var(--neon);
+            box-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="header-neon sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+
+        <h1 class="text-2xl font-bold tracking-wide text-white">
+            PHARMACY ANHDUONG <span class="text-[var(--neon)]"></span>
+        </h1>
+
+        <div class="flex items-center space-x-4">
+
+            <!-- SEARCH -->
+            <input id="search-input" 
+                   type="text" 
+                   placeholder="Tìm kiếm sản phẩm…" 
+                   class="py-2 px-4 rounded-lg w-64 border border-gray-300 focus:ring-2">
+
+            <!-- Auth -->
+            <div id="auth-actions"></div>
+
+            <!-- CART -->
+            <button id="cart-button" 
+                    class="relative bg-[var(--soft-dark)] p-2 rounded-full hover:bg-[var(--semi-dark)] transition"
+                    onclick="openModal('cart-modal'); updateCartModal();">
+                <i data-lucide="shopping-cart" class="w-6 h-6 text-white"></i>
+                <span id="cart-count" 
+                      class="absolute -top-1 -right-1 bg-[var(--neon)] text-black text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+
+<!-- MAIN CONTENT -->
+<main class="max-w-7xl mx-auto px-4 py-10">
+
+    <h2 class="text-3xl font-bold mb-6 text-gray-800">Sản phẩm nổi bật</h2>
+
+    <div id="product-list" 
+         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    </div>
+
+</main>
+
+
+<!-- FOOTER -->
+<footer class="bg-[var(--semi-dark)] text-white py-6 mt-12 text-center">
+    © 2024 Nhà thuốc ANHDUONG.
+</footer>
+
+
+
+
+<!-- ========== CART MODAL ========== -->
+<div id="cart-modal" 
+     class="modal-bg fixed inset-0 hidden flex items-center justify-center z-[1000]">
+    
+    <div class="modal-box w-full max-w-2xl p-6" onclick="event.stopPropagation();">
+
+        <!-- STEP 1 -->
+        <div id="cart-step-1">
+            <div class="flex justify-between items-center pb-3 mb-4 border-b">
+                <h2 class="text-2xl font-bold text-gray-900">Giỏ hàng</h2>
+
+                <button onclick="closeModal('cart-modal')" class="text-gray-800 hover:text-red-500">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div id="cart-items-list" class="space-y-4 max-h-96 overflow-y-auto"></div>
+
+            <button id="clear-cart-button"
+                class="w-full bg-red-500 text-white py-2 rounded-lg font-semibold mb-3 hidden">
+                Xóa toàn bộ giỏ hàng
+            </button>
+
+            <div class="border-t pt-4 mt-4">
+                <div class="flex justify-between text-xl font-bold mb-4">
+                    <span>Tổng tiền:</span>
+                    <span id="cart-total" class="text-[var(--neon)]">0₫</span>
+                </div>
+
+                <button id="checkout-button"
+                    class="w-full btn-neon py-3 rounded-lg text-lg font-semibold"
+                    onclick="showCheckoutForm()">
+                    Đặt hàng
+                </button>
+            </div>
+        </div>
+
+
+        <!-- STEP 2: CHECKOUT -->
+        <div id="cart-step-2" class="hidden">
+
+            <div class="flex justify-between pb-3 mb-4 border-b">
+                <h2 class="text-2xl font-bold">Thông tin đặt hàng</h2>
+
+                <button onclick="resetModalToStep1()" class="text-[var(--neon)] font-semibold">
+                    <i data-lucide="arrow-left" class="w-5 h-5 inline-block mr-1"></i>
+                    Quay lại
+                </button>
+            </div>
+
+            <form id="checkout-form">
+                <label class="block font-medium mb-1">Địa chỉ nhận hàng</label>
+                <textarea id="checkout-address" 
+                          required 
+                          class="w-full border p-3 rounded mb-4"></textarea>
+
+                <label class="block font-medium mb-1">Số điện thoại</label>
+                <input id="checkout-phone" 
+                       type="tel" 
+                       required 
+                       class="w-full border p-3 rounded mb-4">
+
+                <div class="border-t pt-4 mt-4">
+                    <div class="flex justify-between text-xl font-bold mb-3">
+                        <span>Tổng tiền:</span>
+                        <span id="checkout-total" class="text-[var(--neon)]">0₫</span>
+                    </div>
+
+                    <button type="submit" 
+                            class="btn-neon w-full py-3 rounded-lg font-semibold">
+                        Hoàn tất đặt hàng
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+
+<!-- ========== LOGIN MODAL ========== -->
+<div id="login-modal" class="modal-bg fixed inset-0 hidden flex items-center justify-center z-[1000]">
+    <div class="modal-box w-full max-w-md p-6" onclick="event.stopPropagation();">
+
+        <div class="flex justify-between pb-3 mb-4 border-b">
+            <h2 class="text-2xl font-bold">Đăng nhập</h2>
+
+            <button onclick="closeModal('login-modal')">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <form id="login-form">
+                 <label class="block font-medium">Tên đăng nhập</label>
+                 <input id="login-username" name="username"
+                     required 
+                     class="w-full border p-3 rounded mb-4">
+
+                 <label class="block font-medium">Mật khẩu</label>
+                 <input id="login-password" name="password"
+                     type="password" 
+                     required 
+                     class="w-full border p-3 rounded mb-4">
+
+            <button type="submit" class="btn-neon w-full py-3 rounded-lg">
+                Đăng nhập
+            </button>
+        </form>
+
+        <p class="text-center mt-4">
+            Chưa có tài khoản?
+            <a href="#" class="text-[var(--neon)] font-semibold"
+               onclick="closeModal('login-modal'); openModal('register-modal')">
+               Đăng ký ngay
+            </a>
+        </p>
+
+    </div>
+</div>
+
+
+
+<!-- REGISTER MODAL -->
+<div id="register-modal" class="modal-bg fixed inset-0 hidden flex items-center justify-center z-[1000]">
+    <div class="modal-box w-full max-w-md p-6" onclick="event.stopPropagation();">
+
+        <div class="flex justify-between pb-3 mb-4 border-b">
+            <h2 class="text-2xl font-bold">Đăng ký tài khoản</h2>
+
+            <button onclick="closeModal('register-modal')">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <form id="register-form">
+
+            <label class="block font-medium">Tên đăng nhập</label>
+            <input id="register-username" required class="w-full border p-3 rounded mb-4">
+
+            <label class="block font-medium">Mật khẩu</label>
+            <input id="register-password" type="password" required class="w-full border p-3 rounded mb-4">
+
+            <label class="block font-medium">Xác nhận mật khẩu</label>
+            <input id="register-confirm-password" type="password" required class="w-full border p-3 rounded mb-4">
+
+            <button type="submit" class="btn-neon w-full py-3 rounded-lg">
+                Tạo tài khoản
+            </button>
+
+        </form>
+
+    </div>
+</div>
+
+
+
+
+<!-- ========== SCRIPT ========== -->
+<script>
+
+////////////////////////////////////////////////////////
+// CONFIG
+////////////////////////////////////////////////////////
+
+const API_BASE_URL = "https://pharmacy-ilgm.onrender.com";
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let currentUser = JSON.parse(localStorage.getItem("user"));
+let authToken = localStorage.getItem("token");
+
+
+////////////////////////////////////////////////////////
+// UTILS
+////////////////////////////////////////////////////////
+
+function openModal(id) {
+    document.getElementById(id).classList.remove("hidden");
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.add("hidden");
+}
+
+function resetModalToStep1() {
+    document.getElementById("cart-step-2").classList.add("hidden");
+    document.getElementById("cart-step-1").classList.remove("hidden");
+}
+
+function formatPrice(x) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(x);
+}
+
+
+////////////////////////////////////////////////////////
+// AUTH
+////////////////////////////////////////////////////////
+
+function updateAuthUI(user) {
+    const wrap = document.getElementById("auth-actions");
+
+    if (!user) {
+        wrap.innerHTML = `
+            <button onclick="openModal('login-modal')" class="text-white hover:text-[var(--neon)] font-semibold">
+                Đăng nhập
+            </button>
+            <button onclick="openModal('register-modal')" 
+                    class="btn-neon py-2 px-4 rounded-lg">Đăng ký</button>
+        `;
+    } 
+    else {
+        wrap.innerHTML = `
+            <span class="text-white">Xin chào, <b>${user.full_name}</b></span>
+            <button onclick="handleLogout()" 
+                    class="bg-red-500 py-2 px-4 rounded-lg text-white hover:bg-red-600">
+                Đăng xuất
+            </button>
+        `;
+    }
+
+    lucide.createIcons();
+}
+
+
+async function handleLogin(e) {
+    e.preventDefault();
+
+    const form = new FormData(e.target);
+    const body = new URLSearchParams(form).toString();
+
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body
+    });
+
+    if (!res.ok) {
+        alert("Sai thông tin đăng nhập");
+        return;
+    }
+
+    const data = await res.json();
+    authToken = data.access_token;
+    localStorage.setItem("token", authToken);
+
+    const userRes = await fetch(`${API_BASE_URL}/users/me`, {
+        headers: { Authorization: `Bearer ${authToken}` }
+    });
+
+    currentUser = await userRes.json();
+    localStorage.setItem("user", JSON.stringify(currentUser));
+
+    updateAuthUI(currentUser);
+    closeModal("login-modal");
+    alert("Đăng nhập thành công!");
+}
+
+
+async function handleRegister(e) {
+    e.preventDefault();
+
+    const user = {
+        username: document.getElementById("register-username").value,
+        password: document.getElementById("register-password").value,
+        full_name: document.getElementById("register-username").value
+    };
+
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(user)
+    });
+
+    if (!res.ok) {
+        alert("Tên đăng nhập đã tồn tại");
+        return;
+    }
+
+    alert("Đăng ký thành công!");
+    closeModal("register-modal");
+    openModal("login-modal");
+}
+
+
+function handleLogout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    authToken = null;
+    currentUser = null;
+
+    updateAuthUI(null);
+    alert("Đã đăng xuất");
+}
+
+
+////////////////////////////////////////////////////////
+// PRODUCTS
+////////////////////////////////////////////////////////
+
+async function renderProductList(search = "") {
+    const list = document.getElementById("product-list");
+    list.innerHTML = "<p>Đang tải...</p>";
+
+    const res = await fetch(`${API_BASE_URL}/products`);
+    const products = await res.json();
+
+    list.innerHTML = "";
+
+    products
+        .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+        .forEach(p => {
+            list.innerHTML += `
+                <div class="product-card p-4 flex flex-col">
+
+                    <img src="${p.image_url || "https://via.placeholder.com/150"}" 
+                         class="w-full h-40 object-cover rounded-md mb-4">
+
+                    <h3 class="font-semibold text-lg mb-1">${p.name}</h3>
+                    <p class="text-gray-600 text-sm mb-2">${p.description}</p>
+
+                    <div class="mt-auto">
+                        <div class="text-xl font-bold text-[var(--neon)] mb-3">
+                            ${formatPrice(p.price)}
+                        </div>
+
+                        <button class="btn-neon w-full py-2 rounded-lg"
+                                onclick='addToCart(${JSON.stringify(p)})'>
+                            Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+
+////////////////////////////////////////////////////////
+// CART FUNCTIONS
+////////////////////////////////////////////////////////
+
+function updateCart() {
+    localStorage.setItem("cart", JSON.stringify(cart));
+    document.getElementById("cart-count").innerText =
+        cart.reduce((a, b) => a + b.quantity, 0);
+}
+
+function addToCart(p) {
+    p.id = Number(p.id);
+
+    const item = cart.find(i => i.id === p.id);
+
+    if (item) item.quantity++;
+    else cart.push({ ...p, quantity: 1 });
+
+    updateCart();
+    alert("Đã thêm vào giỏ");
+}
+
+
+function updateCartModal() {
+    const list = document.getElementById("cart-items-list");
+    const totalEl = document.getElementById("cart-total");
+    const clearBtn = document.getElementById("clear-cart-button");
+
+    list.innerHTML = "";
+    let total = 0;
+
+    if (cart.length === 0) {
+        list.innerHTML = "<p class='text-center text-gray-600'>Giỏ hàng trống</p>";
+        totalEl.innerText = "0₫";
+        clearBtn.classList.add("hidden");
+        return;
+    }
+
+    clearBtn.classList.remove("hidden");
+
+    cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+
+        list.innerHTML += `
+            <div class="flex justify-between p-3 bg-gray-100 rounded-lg">
+                <div>
+                    <p class="font-semibold">${item.name}</p>
+                    <p class="text-[var(--neon)]">${formatPrice(itemTotal)}</p>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button onclick="changeQty(${item.id}, -1)"
+                        class="px-3 py-1 bg-gray-300 rounded">-</button>
+
+                    <span>${item.quantity}</span>
+
+                    <button onclick="changeQty(${item.id}, 1)"
+                        class="px-3 py-1 bg-gray-300 rounded">+</button>
+
+                    <button onclick="removeCartItem(${item.id})"
+                            class="text-red-500">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    totalEl.innerText = formatPrice(total);
+
+    lucide.createIcons();
+}
+
+function changeQty(id, delta) {
+    const item = cart.find(i => i.id === id);
+    if (!item) return;
+
+    item.quantity += delta;
+
+    if (item.quantity <= 0)
+        cart = cart.filter(i => i.id !== id);
+
+    updateCart();
+    updateCartModal();
+}
+
+function removeCartItem(id) {
+    cart = cart.filter(i => i.id !== id);
+    updateCart();
+    updateCartModal();
+}
+
+function clearCart() {
+    cart = [];
+    updateCart();
+    updateCartModal();
+}
+
+
+////////////////////////////////////////////////////////
+// CHECKOUT
+////////////////////////////////////////////////////////
+
+function showCheckoutForm() {
+    if (!authToken) {
+        closeModal("cart-modal");
+        openModal("login-modal");
+        return;
+    }
+
+    const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    document.getElementById("checkout-total").innerText = formatPrice(total);
+
+    document.getElementById("cart-step-1").classList.add("hidden");
+    document.getElementById("cart-step-2").classList.remove("hidden");
+}
+
+
+async function handleCheckout(e) {
+    e.preventDefault();
+
+    if (cart.length === 0) return alert("Giỏ hàng trống");
+
+    const order = {
+        address: document.getElementById("checkout-address").value.trim(),
+        phone_number: document.getElementById("checkout-phone").value.trim(),
+        cart_items: cart.map(i => ({
+            product_id: i.id,
+            quantity: i.quantity
+        }))
+    };
+
+    const res = await fetch(`${API_BASE_URL}/orders`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify(order)
+    });
+
+    if (!res.ok) {
+        alert("Lỗi đặt hàng");
+        return;
+    }
+
+    const data = await res.json();
+    alert(`Đơn hàng #${data.order_id} đã được tạo!`);
+
+    cart = [];
+    updateCart();
+    closeModal("cart-modal");
+    resetModalToStep1();
+}
+
+
+
+////////////////////////////////////////////////////////
+// INIT
+////////////////////////////////////////////////////////
+
+document.addEventListener("DOMContentLoaded", () => {
+    renderProductList();
+    updateCart();
+    updateAuthUI(currentUser);
+
+    document.getElementById("login-form").addEventListener("submit", handleLogin);
+    document.getElementById("register-form").addEventListener("submit", handleRegister);
+    document.getElementById("checkout-form").addEventListener("submit", handleCheckout);
+
+    document.getElementById("search-input").addEventListener("input", function () {
+        renderProductList(this.value);
+    });
+
+    ["cart-modal", "login-modal", "register-modal"].forEach(id => {
+        const modal = document.getElementById(id);
+        modal.addEventListener("click", e => {
+            if (e.target === modal) closeModal(id);
+        });
+    });
+});
+
+</script>
+
+
+<style>
+  #chat-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #00E5FF;
+    border-radius: 50%;
+    width: 65px;
+    height: 65px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0,229,255,0.6);
+    z-index: 9999;
+  }
+  #chat-window {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 330px;
+    height: 430px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 0 18px rgba(0,0,0,0.25);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9999;
+  }
+  #chat-messages { flex: 1; padding: 12px; overflow-y: auto; font-size: 14px; }
+  .msg-user {
+    background: #00E5FF; color: black; padding: 8px 12px; margin: 6px 0;
+    border-radius: 10px; text-align: right; align-self: flex-end; max-width: 80%;
+  }
+  .msg-bot {
+    background: #e5e7eb; padding: 8px 12px; margin: 6px 0;
+    border-radius: 10px; max-width: 80%;
+  }
+  #chat-input-box { display: flex; border-top: 1px solid #ddd; }
+  #chat-input { flex: 1; padding: 10px; border: none; outline: none; }
+  #chat-send { background: #00E5FF; padding: 0 18px; border: none; cursor: pointer; font-weight: bold; }
+</style>
+
+<div id="chat-btn">
+  <i data-lucide="message-circle" class="w-7 h-7 text-black"></i>
+</div>
+
+<div id="chat-window">
+  <div id="chat-messages"></div>
+  <div id="chat-input-box">
+    <input id="chat-input" placeholder="Nhập tin nhắn..." />
+    <button id="chat-send">Gửi</button>
+  </div>
+</div>
+
+<script>
+const AI_API = "http://127.0.0.1:8000/ai/chat";
+const chatBtn = document.getElementById("chat-btn");
+const chatWindow = document.getElementById("chat-window");
+const chatMessages = document.getElementById("chat-messages");
+const chatSend = document.getElementById("chat-send");
+const chatInput = document.getElementById("chat-input");
+
+chatBtn.addEventListener("click", () => {
+  chatWindow.style.display =
+    chatWindow.style.display === "flex" ? "none" : "flex";
+});
+
+function addMessage(text, isUser = false) {
+  const div = document.createElement("div");
+  div.className = isUser ? "msg-user" : "msg-bot";
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async function sendMessage() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+  addMessage(text, true);
+  chatInput.value = "";
+  addMessage("Đang trả lời...", false);
+  const res = await fetch(AI_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: text }),
+  });
+  const data = await res.json();
+  chatMessages.removeChild(chatMessages.lastChild);
+  addMessage(data.reply, false);
+}
+
+chatSend.addEventListener("click", sendMessage);
+chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+</script>
+
+</body>
+</html>
