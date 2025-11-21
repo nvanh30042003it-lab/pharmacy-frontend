@@ -53,3 +53,5 @@ def chat_ai(req: ChatRequest):
 
     return {"reply": reply}
 
+
+
